@@ -17,8 +17,12 @@ if (isset($_POST['submit'])) {
     if ($id) {
         // Update the student
         if ($fname != '' && $lname != '' && $roll != '' && $class != '') {
-            updateStudent($fname,$lname,$roll,$class,$id);
-            header('location: index.php?task=report');
+            $result = updateStudent($fname,$lname,$roll,$class,$id);
+            if ($result){
+                header('location: index.php?task=report');
+            } else {
+                $error = 1;
+            }
         }
     } else {
         // If not found id then create the student
@@ -31,6 +35,16 @@ if (isset($_POST['submit'])) {
             }
         }
     }
+}
+
+if ('delete' == $task){
+    $id = filter_input(INPUT_GET,'id',FILTER_SANITIZE_STRING);
+
+    if ($id>0){
+        deleteStudent($id);
+        header('location: index.php?task=report');
+    }
+
 }
 
 ?>
@@ -168,5 +182,6 @@ if (isset($_POST['submit'])) {
 <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/js/bootstrap.min.js"
         integrity="sha384-ChfqqxuZUCnJSK3+MXmPNIyE6ZbWh2IMqE241rYiqJxyMiZ6OW/JmZQ5stwEULTy"
         crossorigin="anonymous"></script>
+<script type="text/javascript" src="assets/script.js"></script>
 </body>
 </html>

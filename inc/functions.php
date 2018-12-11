@@ -1,43 +1,44 @@
 <?php
 define("DB_NAME", "/opt/lampp/htdocs/CRUD-Student-Management/data/data.txt");
 
-function seed(){
+function seed()
+{
 
     $data = array(
         array(
-            'id'    => 1,
+            'id' => 1,
             'fname' => 'Rajib',
             'lname' => 'Ahmed',
             'class' => '8',
-            'roll'  => 15,
+            'roll' => 15,
         ),
         array(
-            'id'    => 2,
+            'id' => 2,
             'fname' => 'Mihir',
             'lname' => 'Chowdhury',
             'class' => '8',
-            'roll'  => 13,
+            'roll' => 13,
         ),
         array(
-            'id'    => 3,
+            'id' => 3,
             'fname' => 'Safa',
             'lname' => 'Kabir',
             'class' => '8',
-            'roll'  => 10,
+            'roll' => 10,
         ),
         array(
-            'id'    => 4,
+            'id' => 4,
             'fname' => 'Khalil',
             'lname' => 'Ahmed',
             'class' => '8',
-            'roll'  => 9,
+            'roll' => 9,
         ),
         array(
-            'id'    => 5,
+            'id' => 5,
             'fname' => 'Karim',
             'lname' => 'Khan',
             'class' => '8',
-            'roll'  => 5,
+            'roll' => 5,
         )
     );
 
@@ -47,7 +48,8 @@ function seed(){
     }
 }
 
-function displayData(){
+function displayData()
+{
     $unserializedData = file_get_contents(DB_NAME);
     $data = unserialize($unserializedData);
     if (!empty($data)) :
@@ -70,7 +72,7 @@ function displayData(){
                 echo "<td>{$singleData['fname']} {$singleData['lname']}</td>";
                 echo "<td>{$singleData['class']}</td>";
                 echo "<td>{$singleData['roll']}</td>";
-                echo "<td> <a href='index.php?task=edit&id={$singleData['id']}'>Edit</a> | <a href='index.php?task=delete&id={$singleData['id']}'>Delete</a> </td>";
+                echo "<td> <a href='index.php?task=edit&id={$singleData['id']}'>Edit</a> | <a class='delete' href='index.php?task=delete&id={$singleData['id']}'>Delete</a> </td>";
                 echo "</tr>";
             }
             ?>
@@ -80,26 +82,28 @@ function displayData(){
     endif;
 }
 
-function addNewStudent($fname,$lname,$roll,$class){
+function addNewStudent($fname, $lname, $roll, $class)
+{
 
-    $data =    file_get_contents(DB_NAME);
+    $data = file_get_contents(DB_NAME);
     $students = unserialize($data);
     $found = false;
     foreach ($students as $student) {
-        if ($student['roll'] == $roll && $student['class'] == $class){
+        if ($student['roll'] == $roll && $student['class'] == $class) {
             $found = true;
         }
     }
 
-    if (!$found){
+    // If student not found then add new student
+    if (!$found) {
         $student = array(
-            'id'    => count($students) +1,
+            'id' => getNewId($students),
             'fname' => $fname,
             'lname' => $lname,
-            'roll'  => $roll,
+            'roll' => $roll,
             'class' => $class
         );
-        array_push($students,$student);
+        array_push($students, $student);
 
         $serializeData = serialize($students);
 
@@ -114,12 +118,13 @@ function addNewStudent($fname,$lname,$roll,$class){
 }
 
 
-function getStudent($id){
+function getStudent($id)
+{
     $unserializedData = file_get_contents(DB_NAME);
     $students = unserialize($unserializedData);
 
     foreach ($students as $student) {
-        if ($student['id'] == $id){
+        if ($student['id'] == $id) {
             return $student;
         }
     }
@@ -127,27 +132,52 @@ function getStudent($id){
 }
 
 
-function updateStudent($fname,$lname,$roll,$class,$id){
+function updateStudent($fname, $lname, $roll, $class, $id)
+{
     $unserializedData = file_get_contents(DB_NAME);
     $students = unserialize($unserializedData);
 
-    $students[$id-1]['fname'] = $fname;
-    $students[$id-1]['lname'] = $lname;
-    $students[$id-1]['roll'] = $roll;
-    $students[$id-1]['class'] = $class;
-
-    $serializeData = serialize($students);
-
-    if (is_writable(DB_NAME)) {
-        file_put_contents(DB_NAME, $serializeData, LOCK_EX);
+    $found = false;
+    foreach ($students as $student) {
+        if ($student['roll'] == $roll && $student['class'] == $class && $student['id'] != $id) {
+            $found = true;
+        }
     }
+
+    // If student not found in same id and class then update
+    if (!$found) { // This means if not found / found == false
+
+        $students[$id - 1]['fname'] = $fname;
+        $students[$id - 1]['lname'] = $lname;
+        $students[$id - 1]['roll'] = $roll;
+        $students[$id - 1]['class'] = $class;
+
+        $serializeData = serialize($students);
+
+        if (is_writable(DB_NAME)) {
+            file_put_contents(DB_NAME, $serializeData, LOCK_EX);
+        }
+        return true;
+    }
+    return false;
 }
 
+function deleteStudent($id){
+    $unserializeData = file_get_contents(DB_NAME);
+    $students = unserialize($unserializeData);
 
+    unset($students[$id-1]);
 
+    $serializeData = serialize($students);
+    file_put_contents(DB_NAME,$serializeData,LOCK_EX);
+}
 
+function getNewId($students){
 
+    $id = max(array_column($students,'id'));
 
+    return $id+1;
+}
 
 
 
