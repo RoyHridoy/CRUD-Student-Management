@@ -1,6 +1,14 @@
 <?php require_once "./inc/functions.php"; ?>
 
 <?php
+
+//
+//if (false == $loggedIn){
+//    header('location: login.php');
+//}
+
+
+
 $task = $_GET['task'] ?? 'report';
 $error = $_GET['error'] ?? '0';
 $fname = '';
