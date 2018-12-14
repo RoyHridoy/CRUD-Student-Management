@@ -1,44 +1,44 @@
 <?php
 define("DB_NAME", "/opt/lampp/htdocs/CRUD-Student-Management/data/data.txt");
+define("DB_USERNAME", "/opt/lampp/htdocs/CRUD-Student-Management/data/users.txt");
 
-function seed()
-{
+function seed() {
 
     $data = array(
         array(
-            'id' => 1,
+            'id'    => 1,
             'fname' => 'Rajib',
             'lname' => 'Ahmed',
             'class' => '8',
-            'roll' => 15,
+            'roll'  => 15,
         ),
         array(
-            'id' => 2,
+            'id'    => 2,
             'fname' => 'Mihir',
             'lname' => 'Chowdhury',
             'class' => '8',
-            'roll' => 13,
+            'roll'  => 13,
         ),
         array(
-            'id' => 3,
+            'id'    => 3,
             'fname' => 'Safa',
             'lname' => 'Kabir',
             'class' => '8',
-            'roll' => 10,
+            'roll'  => 10,
         ),
         array(
-            'id' => 4,
+            'id'    => 4,
             'fname' => 'Khalil',
             'lname' => 'Ahmed',
             'class' => '8',
-            'roll' => 9,
+            'roll'  => 9,
         ),
         array(
-            'id' => 5,
+            'id'    => 5,
             'fname' => 'Karim',
             'lname' => 'Khan',
             'class' => '8',
-            'roll' => 5,
+            'roll'  => 5,
         )
     );
 
@@ -48,10 +48,9 @@ function seed()
     }
 }
 
-function displayData()
-{
+function displayData() {
     $unserializedData = file_get_contents(DB_NAME);
-    $data = unserialize($unserializedData);
+    $data             = unserialize($unserializedData);
     if (!empty($data)) :
         ?>
         <table class="table table-striped table-bordered">
@@ -61,7 +60,9 @@ function displayData()
                 <th>Name</th>
                 <th>Class</th>
                 <th>Roll</th>
-                <th>Action</th>
+                <?php if (isset($_SESSION['user']) && (isAdmin($_SESSION['user']) || isEditor($_SESSION['user']))) { ?>
+                    <th>Action</th>
+                <?php } ?>
             </tr>
             </thead>
             <?php
@@ -72,7 +73,12 @@ function displayData()
                 echo "<td>{$singleData['fname']} {$singleData['lname']}</td>";
                 echo "<td>{$singleData['class']}</td>";
                 echo "<td>{$singleData['roll']}</td>";
-                echo "<td> <a href='index.php?task=edit&id={$singleData['id']}'>Edit</a> | <a class='delete' href='index.php?task=delete&id={$singleData['id']}'>Delete</a> </td>";
+                if (isset($_SESSION['user']) && (isAdmin($_SESSION['user']) || isEditor($_SESSION['user']))) {
+                    echo "<td> <a href='index.php?task=edit&id={$singleData['id']}'>Edit</a> ";
+                }
+                if (isset($_SESSION['user']) && isAdmin($_SESSION['user'])) {
+                    echo "| <a class='delete' href='index.php?task=delete&id={$singleData['id']}'>Delete</a> </td>";
+                }
                 echo "</tr>";
             }
             ?>
@@ -82,12 +88,11 @@ function displayData()
     endif;
 }
 
-function addNewStudent($fname, $lname, $roll, $class)
-{
+function addNewStudent($fname, $lname, $roll, $class) {
 
-    $data = file_get_contents(DB_NAME);
+    $data     = file_get_contents(DB_NAME);
     $students = unserialize($data);
-    $found = false;
+    $found    = false;
     foreach ($students as $student) {
         if ($student['roll'] == $roll && $student['class'] == $class) {
             $found = true;
@@ -97,10 +102,10 @@ function addNewStudent($fname, $lname, $roll, $class)
     // If student not found then add new student
     if (!$found) {
         $student = array(
-            'id' => getNewId($students),
+            'id'    => getNewId($students),
             'fname' => $fname,
             'lname' => $lname,
-            'roll' => $roll,
+            'roll'  => $roll,
             'class' => $class
         );
         array_push($students, $student);
@@ -118,10 +123,9 @@ function addNewStudent($fname, $lname, $roll, $class)
 }
 
 
-function getStudent($id)
-{
+function getStudent($id) {
     $unserializedData = file_get_contents(DB_NAME);
-    $students = unserialize($unserializedData);
+    $students         = unserialize($unserializedData);
 
     foreach ($students as $student) {
         if ($student['id'] == $id) {
@@ -132,10 +136,9 @@ function getStudent($id)
 }
 
 
-function updateStudent($fname, $lname, $roll, $class, $id)
-{
+function updateStudent($fname, $lname, $roll, $class, $id) {
     $unserializedData = file_get_contents(DB_NAME);
-    $students = unserialize($unserializedData);
+    $students         = unserialize($unserializedData);
 
     $found = false;
     foreach ($students as $student) {
@@ -149,7 +152,7 @@ function updateStudent($fname, $lname, $roll, $class, $id)
 
         $students[$id - 1]['fname'] = $fname;
         $students[$id - 1]['lname'] = $lname;
-        $students[$id - 1]['roll'] = $roll;
+        $students[$id - 1]['roll']  = $roll;
         $students[$id - 1]['class'] = $class;
 
         $serializeData = serialize($students);
@@ -162,24 +165,42 @@ function updateStudent($fname, $lname, $roll, $class, $id)
     return false;
 }
 
-function deleteStudent($id){
+function deleteStudent($id) {
     $unserializeData = file_get_contents(DB_NAME);
-    $students = unserialize($unserializeData);
+    $students        = unserialize($unserializeData);
 
-    unset($students[$id-1]);
+    unset($students[$id - 1]);
 
     $serializeData = serialize($students);
-    file_put_contents(DB_NAME,$serializeData,LOCK_EX);
+    file_put_contents(DB_NAME, $serializeData, LOCK_EX);
 }
 
-function getNewId($students){
+function getNewId($students) {
 
-    $id = max(array_column($students,'id'));
+    $id = max(array_column($students, 'id'));
 
-    return $id+1;
+    return $id + 1;
 }
 
+function isAdmin($username) {
+    $fp = fopen(DB_USERNAME, 'r');
+    while ($data = fgetcsv($fp)) {
+        if ($data[0] == $username && $data[2] == 'admin') {
+            return true;
+        }
+    }
+    return false;
+}
 
+function isEditor($username) {
+    $fp = fopen(DB_USERNAME, 'r');
+    while ($data = fgetcsv($fp)) {
+        if ($data[0] == $username && $data[2] == 'editor') {
+            return true;
+        }
+    }
+    return false;
+}
 
 
 

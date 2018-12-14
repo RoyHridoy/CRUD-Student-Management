@@ -1,32 +1,25 @@
 <?php require_once "./inc/functions.php"; ?>
 
 <?php
-
-//
-//if (false == $loggedIn){
-//    header('location: login.php');
-//}
-
-
-
-$task = $_GET['task'] ?? 'report';
+//session_start();
+$task  = $_GET['task'] ?? 'report';
 $error = $_GET['error'] ?? '0';
 $fname = '';
 $lname = '';
-$roll = '';
+$roll  = '';
 $class = '';
 if (isset($_POST['submit'])) {
     $fname = filter_input(INPUT_POST, 'fname', FILTER_SANITIZE_STRING);
     $lname = filter_input(INPUT_POST, 'lname', FILTER_SANITIZE_STRING);
-    $roll = filter_input(INPUT_POST, 'roll', FILTER_SANITIZE_STRING);
+    $roll  = filter_input(INPUT_POST, 'roll', FILTER_SANITIZE_STRING);
     $class = filter_input(INPUT_POST, 'class', FILTER_SANITIZE_STRING);
-    $id = filter_input(INPUT_POST, 'id', FILTER_SANITIZE_STRING);
+    $id    = filter_input(INPUT_POST, 'id', FILTER_SANITIZE_STRING);
 
     if ($id) {
         // Update the student
         if ($fname != '' && $lname != '' && $roll != '' && $class != '') {
-            $result = updateStudent($fname,$lname,$roll,$class,$id);
-            if ($result){
+            $result = updateStudent($fname, $lname, $roll, $class, $id);
+            if ($result) {
                 header('location: index.php?task=report');
             } else {
                 $error = 1;
@@ -45,10 +38,10 @@ if (isset($_POST['submit'])) {
     }
 }
 
-if ('delete' == $task){
-    $id = filter_input(INPUT_GET,'id',FILTER_SANITIZE_STRING);
+if ('delete' == $task) {
+    $id = filter_input(INPUT_GET, 'id', FILTER_SANITIZE_STRING);
 
-    if ($id>0){
+    if ($id > 0) {
         deleteStudent($id);
         header('location: index.php?task=report');
     }
@@ -72,6 +65,7 @@ if ('delete' == $task){
     <title>CRUD - Student Management</title>
 </head>
 <body>
+
 
 <?php include_once "./inc/templates/nav.php"; ?>
 
