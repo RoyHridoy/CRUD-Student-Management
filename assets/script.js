@@ -1,6 +1,6 @@
 document.addEventListener('DOMContentLoaded', function () {
 
-    var links = document.querySelectorAll(".delete");
+    let links = document.querySelectorAll(".delete");
 
     for (let i = 0; i < links.length; i++) {
         links[i].addEventListener("click", function (e) {
