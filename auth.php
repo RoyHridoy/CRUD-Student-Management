@@ -5,14 +5,14 @@ $username = filter_input(INPUT_POST, 'username', FILTER_SANITIZE_STRING);
 $password = filter_input(INPUT_POST, 'password', FILTER_SANITIZE_STRING);
 
 $error = false;
-
-$fp = fopen('./data/users.txt', 'r');
+$fp    = fopen('./data/users.txt', 'r');
 
 if ($username && $password) {
     while ($data = fgetcsv($fp)) {
         if ($data[0] == $username && $data[1] == sha1($password)) {
             $_SESSION['loggedIn'] = true;
             $_SESSION['user']     = $username;
+            $_SESSION['role'] = $data[2];
             header('location: index.php');
         }
     }
